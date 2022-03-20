@@ -15,7 +15,12 @@ This project uses Node.js + express as a server, with 2 endpoints
     - "image file is found": checks if the imageFile to be tested is found at /images
     - "is test-image uploaded": checks endPoint /api/resize by uploading a test image with specified height & width, checks for a success response 200 then tears down the  testImage from /uploads
 
-  # POST Response cases:
+  # GET Response cases:
+    - if image uploaded & resized Successfully : returns a status 200 & the resized image File
+    - if selected image is pre-existed: returns a status 200 & the cached image File
+    - if selected image doesn't has .jpg extension: returns an error of status 415 with { message: "Use only .jpg" }
+
+# POST Response cases:
     - if image uploaded & resized Successfully : returns a status 200 with { message: "Uploaded Successfully", img_path: "its path on the server" }
     - if selected image is pre-existed: returns a status 200 with { message: "Image Existed !", img_path: "its path on the server" }
     - if selected image doesn't has .jpg extension: returns an error of status 415 with { message: "Use only .jpg" }

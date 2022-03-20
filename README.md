@@ -1,11 +1,18 @@
 # project_imageProcessingApi
-This project uses Node.js + express as a server, with 2 endpoints
+This project uses Node.js + express as a server
   - GET: http://localhost:3000/api/resize?width=[number]&height=[number]&img=[image_name] which can be accessed from a browser URL, immediately shows the resized image
   - POST: http://localhost:3000/api/resize which can be accessed via GUI on "front-end/index.html", just choose an image with .jpg extension, define its height and width and your resized image will be ready
 
+** Note: uploaded images are being stored at "/uploads"
+
   # Getting the server ready:
     - npm install
+  # Building TS to Js
+    - npm run build
+  # Running the server
     - npm run start
+    OR
+    - node dist/.
   
   # Testing: uses jasmine tesing & supertest dependinces
     - npm run test

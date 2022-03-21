@@ -3,7 +3,18 @@ import path from "path";
 import supertest from "supertest";
 import fs from "fs";
 
-describe("server running", () => {
+const img_width = 50;
+const img_height = 40;
+
+const testImgName = "encenadaport.jpg";
+const testImgPath = path.join(__dirname, "..", "..", "images", testImgName);
+
+const uploadPath = path.join(__dirname, "..", "..", "uploads");
+const uploaded_img_name = path.parse(testImgName).name + "_" + img_width + "_" + img_height + path.extname(testImgName);
+const uploaded_img_path = path.join(uploadPath, uploaded_img_name);
+
+
+describe("server is running", () => {
     it("express server response 200", () => {
         return supertest(index.app)
             .get("/")
@@ -11,32 +22,10 @@ describe("server running", () => {
     });
 });
 
-describe("suite image upload", () => {
-    const img_width = 60;
-    const img_height = 40;
 
-    const testImgName = "encenadaport.jpg";
-    const testImgPath = path.join(__dirname, "..", "..", "images", testImgName);
+describe("suite image upload POST", () => {
 
-    const uploadPath = path.join(__dirname, "..", "..", "uploads");
-
-    const uploaded_img_name =
-        path.parse(testImgName).name +
-        "_" +
-        img_width +
-        "_" +
-        img_height +
-        path.extname(testImgName);
-    const uploaded_img_path = path.join(uploadPath, uploaded_img_name);
-
-    it("image file is found", () => {
-        expect(fs.existsSync(testImgPath)).toBeTruthy();
-    });
-
-    it("is test-image uploaded", () => {
-        if (!fs.existsSync(testImgPath)) {
-            throw new Error("file not exist" + testImgPath);
-        }
+    it("is test-image uploaded and resized", () => {
 
         return supertest(index.app)
             .post("/api/resize")

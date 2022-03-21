@@ -1,10 +1,11 @@
 import express from "express";
 import fs from "fs";
 import fileupload from "express-fileupload";
-import sharp from "sharp";
 import cors from "cors";
 import path from "path";
-import { queryParser } from "express-query-parser";
+import {queryParser} from "express-query-parser";
+// utilities (Modules)
+import resizeImage from "../../utilities/resizeImage";
 
 const sharpResize = express.Router();
 
@@ -20,31 +21,18 @@ const qParse = queryParser({
 });
 
 // GET endpoint for Browser URL
-sharpResize.get("/", qParse, (req, res) => {
+sharpResize.get("/", qParse, async (req: express.Request, res: express.Response): Promise<void> => {
     try {
         // resize dimensions
-        const img_width = req.query.width as unknown as number;
-        const img_height = req.query.height as unknown as number;
+        const img_width: number = req.query.width as unknown as number;
+        const img_height: number = req.query.height as unknown as number;
 
         // image_name from "images" dir
         const image_name: string = req.query.img as unknown as string;
-        const selected_image_path = path.join(
-            __dirname,
-            "..",
-            "..",
-            "..",
-            "images",
-            image_name
-        );
+        const selected_image_path = path.join(__dirname, "..", "..", "..", "images", image_name);
 
         const upload_path = path.join(__dirname, "..", "..", "..", "uploads");
-        const uploaded_img_name =
-            path.parse(image_name).name +
-            "_" +
-            img_width +
-            "_" +
-            img_height +
-            path.extname(image_name);
+        const uploaded_img_name = path.parse(image_name).name + "_" + img_width + "_" + img_height + path.extname(image_name);
         const uploaded_img_path = path.join(upload_path, uploaded_img_name);
 
         // check - if image exists in uploads
@@ -62,40 +50,39 @@ sharpResize.get("/", qParse, (req, res) => {
             return;
         }
 
-        // resize image
-        sharp(selected_image_path)
-            .resize(img_width, img_height)
-            .toFile("uploads/" + uploaded_img_name)
-            .then(() => {
-                res.status(200).sendFile(uploaded_img_path);
-            })
-            .catch((err) => {
-                res.send(err);
-            });
+
+        // make "Uploads" directory if not exist
+        if(!fs.existsSync(upload_path)){
+            fs.mkdirSync(upload_path);
+        }
+
+        // resizing the image
+        const isUploaded = await resizeImage(selected_image_path, img_width, img_height, uploaded_img_name);
+        if(isUploaded){
+            res.status(200).sendFile(uploaded_img_path);
+        }
+        else{
+            throw new Error("Problem with uploading and resizing the image");
+        }
+
     } catch (e) {
         res.send((e as Error).message);
     }
 });
 
 // POST endpoint for GUI
-sharpResize.post("/", (req, res) => {
+sharpResize.post("/", async (req: express.Request, res: express.Response): Promise<void> => {
     try {
         // resize dimensions
-        const img_width = parseInt(req.body.img_width);
-        const img_height = parseInt(req.body.img_height);
+        const img_width: number = parseInt(req.body.img_width);
+        const img_height: number = parseInt(req.body.img_height);
 
         // uploaded image file
         const imageFile = req.files?.img_file as fileupload.UploadedFile;
         const image_name = imageFile.name;
 
         const upload_path = path.join(__dirname, "..", "..", "..", "uploads");
-        const uploaded_img_name =
-            path.parse(image_name).name +
-            "_" +
-            img_width +
-            "_" +
-            img_height +
-            path.extname(image_name);
+        const uploaded_img_name = path.parse(image_name).name + "_" + img_width + "_" + img_height + path.extname(image_name);
         const uploaded_img_path = path.join(upload_path, uploaded_img_name);
 
         // check - if image exists in uploads
@@ -133,22 +120,23 @@ sharpResize.post("/", (req, res) => {
             return;
         }
 
-        // resize image
-        sharp(imageFile.data)
-            .resize({
-                width: img_width,
-                height: img_height,
-            })
-            .toFile(uploaded_img_path)
-            .then(() => {
-                res.status(200).json({
-                    message: "Uploaded Successfully",
-                    img_path: uploaded_img_path,
-                });
-            })
-            .catch((err) => {
-                res.send(err);
+        // make "Uploads" directory if not exist
+        if(!fs.existsSync(upload_path)){
+            fs.mkdirSync(upload_path);
+        }
+
+        // resizing the image
+        const isUploaded = await resizeImage(imageFile.data, img_width, img_height, uploaded_img_name);
+        if(isUploaded){
+            res.status(200).json({
+                message: "Uploaded Successfully",
+                img_path: uploaded_img_path,
             });
+        }
+        else{
+            throw new Error("Problem with uploading and resizing the image");
+        }
+
     } catch (e) {
         res.send((e as Error).message);
     }

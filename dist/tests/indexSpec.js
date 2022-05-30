@@ -14,14 +14,14 @@ const testImgPath = path_1.default.join(__dirname, "..", "..", "images", testImg
 const uploadPath = path_1.default.join(__dirname, "..", "..", "uploads");
 const uploaded_img_name = path_1.default.parse(testImgName).name + "_" + img_width + "_" + img_height + path_1.default.extname(testImgName);
 const uploaded_img_path = path_1.default.join(uploadPath, uploaded_img_name);
-describe("server running", () => {
+describe("server is running", () => {
     it("express server response 200", () => {
         return (0, supertest_1.default)(index_1.default.app)
             .get("/")
             .expect(200, "Server is Working Proberly");
     });
 });
-describe("suite image upload", () => {
+describe("suite image upload POST", () => {
     it("is test-image uploaded and resized", () => {
         return (0, supertest_1.default)(index_1.default.app)
             .post("/api/resize")
